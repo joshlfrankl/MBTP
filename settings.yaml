@@ -1,0 +1,40 @@
+# Mutation settings
+pointRatePerGenome: 0.5           # Rates are lambda parameter of poisson distribution
+insertionRatePerGenome: 0.01      
+insertionRelSize: 0.05            # Proportion of genome size
+deletionRatePerGenome: 0.01
+deletionRelSize: 0.05
+inversionRatePerGenome: 0.01
+inversionRelSize: 0.05
+reversalRatePerGenome: 0.01
+reversalRelSize: 0.05
+duplicationRatePerGenome: 0.01
+duplicationRelSize: 0.05
+swapRatePerGenome: 0.01
+incrementRatePerGenome: 0.01
+decrementRatePerGenome: 0.01
+crossoverRate: 1                   # + 1 required crossover during sexual reproduction
+
+# Brain settings
+memorySize: 8                      # How many nodes in the brain?
+seedGates: 3                       # Initial genomes with fewer gates than this will have gates inserted to reach this number
+
+# Organism settings
+genomeLength: 512                  # Initial number of bytes in each genome
+
+# Population settings
+populationSize: 1000000            # Number of organisms in the population
+kProportion: 0.001                 # Proportion of population in each tournament
+nProportion: 0.05                  # How many tournaments occur as a proportion of population size
+
+# Experiment settings
+experimentName: "MoveTaskTest"
+DBPath: "/tmp/out_db.db"                                    # Path to 
+dumpPopulationPath: "/tmp/population_dump.db"               # Path to save the population after execution
+loadPopulationPath: "/tmp/population_dump.db"               # Path to load a population from a file
+compressDumpedPopulations?: "False"                         # Can only compress populations up to 2GB for now
+loadPopulationFromFile?: "False"                            # Load a saved population from a file? If not, a randomly generated population is used
+generations: 100                                            # Number of generations before stopping
+randomSeed: 0                                               # 0 for a randomized seed, which will be printed on startup
+dumpImages?: "True"                                         # Save images for the task?
+renderPath: "/tmp/image_dump"                               # Path to save the images
