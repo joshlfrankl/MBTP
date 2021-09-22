@@ -31,7 +31,7 @@ namespace Organism
 
         private double Fitness;
 
-        private Dictionary<String, String> Stats;
+        private string Stats;
 
         public static List<String> StatKeys = new List<String> { "GenomeLength", "BrainSize", "Fitness" };
         public TaskOrganism(int genomeLength, int randomSeed)
@@ -40,6 +40,7 @@ namespace Organism
             this.Genome = ByteGenome.RandByteGenome(genomeLength, Convert.ToInt32(Configuration.Config["seedGates"]), Rng);
             this.Brain = new Brain(Convert.ToInt32(Configuration.Config["memorySize"]), this.Genome);
             this.Fitness = 0.0;
+            this.Stats = "";
         }
 
         public TaskOrganism(TaskOrganism parent, Mutator mutator, int randomSeed)
@@ -49,6 +50,7 @@ namespace Organism
             mutator.MutateGenome(this.Genome, this.Rng);
             this.Brain = new Brain(Convert.ToInt32(Configuration.Config["memorySize"]), this.Genome);
             this.Fitness = 0.0;
+            this.Stats = "";
         }
 
         public TaskOrganism(ByteGenome g, string rngState)
@@ -57,6 +59,7 @@ namespace Organism
             this.Genome = g.Clone();
             this.Brain = new Brain(Convert.ToInt32(Configuration.Config["memorySize"]), this.Genome);
             this.Fitness = 0.0;
+            this.Stats = "";
         }
 
         public TaskOrganism(ByteGenome g, int randomSeed)
@@ -65,6 +68,7 @@ namespace Organism
             this.Genome = g.Clone();
             this.Brain = new Brain(Convert.ToInt32(Configuration.Config["memorySize"]), this.Genome);
             this.Fitness = 0.0;
+            this.Stats = "";
         }
 
         public void Run(int updates)
@@ -88,6 +92,7 @@ namespace Organism
             mutator.MutateGenome(target.Genome, target.Rng);
             target.Brain.Rebuild(target.Genome);
             target.Fitness = 0.0;
+            target.Stats = "";
         }
 
         public void setRng(int seed)
@@ -145,9 +150,13 @@ namespace Organism
             return (Brain.GetMemoryLength());
         }
 
-        public Dictionary<String, String> GetStats()
+        public string GetStats()
         {
             return (Stats);
+        }
+
+        public void SetStats(string st) {
+            Stats = st;
         }
 
         public void SetFitness(double f)

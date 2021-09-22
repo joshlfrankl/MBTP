@@ -28,8 +28,8 @@ namespace AuditorNS
         private TaskPopulation Population;
         public Dictionary<String, double> Stats;
 
-        public Action<TaskOrganism, string> Task;
-        public Auditor(TaskPopulation population, String outpath, Action<TaskOrganism, string> task)
+        public Action<TaskOrganism, string, bool> Task;
+        public Auditor(TaskPopulation population, String outpath, Action<TaskOrganism, string, bool> task)
         {
             this.Population = population;
             this.Task = task;
@@ -45,7 +45,8 @@ namespace AuditorNS
                 fitness REAL NOT NULL,
                 length INTEGER NOT NULL,
                 gates INTEGER NOT NULL,
-                genome TEXT NOT NULL)";
+                genome TEXT NOT NULL,
+                log TEXT)";
                 Command.ExecuteNonQuery();
 
                 Command.CommandText = @" DROP TABLE IF EXISTS 'avgOrgs';
@@ -115,7 +116,7 @@ namespace AuditorNS
             if (Convert.ToBoolean(Configuration.Config["dumpImages?"]))
             {
                 Console.WriteLine("Rendering max org...");
-                Task(Population.Orgs[MaxIdx], $"gen{generation}");
+                Task(Population.Orgs[MaxIdx], $"gen{generation}", true);
             }
         }
 
@@ -127,7 +128,7 @@ namespace AuditorNS
                 using (var transaction = SqliteConn.BeginTransaction())
                 {
                     var Command = SqliteConn.CreateCommand();
-                    Command.CommandText = @"INSERT INTO maxOrgs (generation, fitness, length, gates, genome) VALUES ($generation, $fitness, $length, $gates, $genome)";
+                    Command.CommandText = @"INSERT INTO maxOrgs (generation, fitness, length, gates, genome, log) VALUES ($generation, $fitness, $length, $gates, $genome, $log)";
 
                     var GenerationParameter = Command.CreateParameter();
                     GenerationParameter.ParameterName = "$generation";
@@ -153,6 +154,11 @@ namespace AuditorNS
                     GenomeParameter.ParameterName = "$genome";
                     Command.Parameters.Add(GenomeParameter);
                     GenomeParameter.Value = string.Join(",", org.GetGenome().Genome);
+
+                    var LogParameter = Command.CreateParameter();
+                    GenomeParameter.ParameterName = "$log";
+                    Command.Parameters.Add(LogParameter);
+                    GenomeParameter.Value = org.GetStats();
 
                     Command.ExecuteNonQuery();
 

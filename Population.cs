@@ -77,10 +77,10 @@ namespace PopulationNS
             }
         }
 
-        public void Tick(Action<TaskOrganism, string> w)
+        public void Tick(Action<TaskOrganism, string, bool> w)
         {
             // Consider partitioner to reduce overhead?
-            Parallel.ForEach(Orgs, org => w(org, ""));
+            Parallel.ForEach(Orgs, org => w(org, "", false));
         }
 
         public void ReproTournament(int n, int k, bool sex)

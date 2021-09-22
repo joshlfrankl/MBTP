@@ -80,7 +80,7 @@ namespace MBTP
             string RunTimeString = String.Format("Population initialization took: {0:F4}s", RunTime.TotalSeconds);
             Console.WriteLine(RunTimeString);
 
-            Action<TaskOrganism, string> theTask = MoveTask.Run;
+            Action<TaskOrganism, string, bool> theTask = MoveTask.Run;
 
             int NumGenerations = Convert.ToInt32(Configuration.Config["generations"]);
             Auditor PopAuditor = new Auditor(p, String.Format("Data Source={0}", Configuration.Config["DBPath"]), theTask);

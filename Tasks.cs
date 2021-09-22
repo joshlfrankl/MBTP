@@ -14,6 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using Organism;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -47,16 +48,18 @@ namespace Tasks
 
     class MoveTask
     {
-        private static double TargetX = 25.0;
-        private static double TargetY = 25.0;
 
-        private static int NumUpdates = 100;
+        public static void Run(TaskOrganism org, string dirName, bool logData)
+        {   
+            double TargetX = 25.0;
+            double TargetY = 25.0;
+            int NumUpdates = 100;
+            List<string> Log = new List<string>(NumUpdates);
 
-        public static void Run(TaskOrganism org, string dirName)
-        {
             double OrgX = 0.0;
             double OrgY = 0.0;
             double OrgAngle = 0.0;
+            double OrgSpeed = 1.0;
 
             if (dirName != "")
             {
@@ -70,22 +73,32 @@ namespace Tasks
                 org.Run(1);
 
                 int turn = org.GetMemory(0);
-                if (turn < 128)
+                if (turn < 100)
                 {
                     OrgAngle += 0.1;
+                } else if (turn < 200) {
+                    OrgAngle -= 0.1;
+                } else {
+                    // Nothing
                 }
 
-                double speed = (org.GetMemory(1) / 255.0);
+                //OrgSpeed = (org.GetMemory(1) / 255.0);
 
-                OrgX += Math.Cos(OrgAngle) * speed;
-                OrgY += Math.Sin(OrgAngle) * speed;
+                OrgX += Math.Cos(OrgAngle) * OrgSpeed;
+                OrgY += Math.Sin(OrgAngle) * OrgSpeed;
 
                 if (dirName != "")
                 {
                     render(org, dirName, i, OrgX, OrgY, OrgAngle, TargetX, TargetY);
                 }
+
+                if (logData)
+                {
+                    Log.Add($"{OrgX},{OrgY},{OrgAngle},{OrgSpeed}");
+                }
             }
             org.SetFitness((1.0 / Math.Sqrt(Math.Pow(OrgX - TargetX, 2.0) + Math.Pow(OrgY - TargetY, 2.0))));
+            org.SetStats(String.Join(";", Log));
         }
 
         private static void render(TaskOrganism org, string dirName, int i, double orgX, double orgY, double orgAngle, double targetX, double targetY)
