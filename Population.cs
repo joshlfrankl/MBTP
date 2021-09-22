@@ -18,11 +18,12 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using Microsoft.Data.Sqlite;
 using Organism;
 using Genome;
-using Microsoft.Data.Sqlite;
 using Global;
-using System.IO.Compression;
 using JSFDN;
 
 namespace PopulationNS
@@ -197,16 +198,25 @@ namespace PopulationNS
 
             if (Convert.ToBoolean(Configuration.Config["compressDumpedPopulations?"]))
             {
-                using (ZipArchive DBZip = ZipFile.Open(string.Format("{0}.zip", Configuration.Config["dumpPopulationPath"]), ZipArchiveMode.Update))
+                // using (ZipArchive DBZip = ZipFile.Open(string.Format("{0}.zip", Configuration.Config["dumpPopulationPath"]), ZipArchiveMode.Update))
+                // {
+                //     DBZip.CreateEntryFromFile(Configuration.Config["dumpPopulationPath"], "dump.db");
+                // }
+                using (FileStream DbToCompress = File.OpenRead($"{Configuration.Config["dumpPopulationPath"]}")) 
                 {
-                    DBZip.CreateEntryFromFile(Configuration.Config["dumpPopulationPath"], "dump.db");
+                    using (FileStream CompressedDb = File.Create($"{Configuration.Config["dumpPopulationPath"]}.gz"))
+                    {
+                        using (GZipStream DbCompressionStream = new GZipStream(CompressedDb, CompressionMode.Compress))
+                        {   
+                            Console.WriteLine($"Compressing {Configuration.Config["dumpPopulationPath"]}");
+                            DbToCompress.CopyTo(DbCompressionStream);
+                        }
+                    }
                 }
             }
 
             string TotalTimeString = String.Format("Dumping population took: {0:F4}s\n\n", DumpTimer.Elapsed.TotalSeconds);
             Console.WriteLine(TotalTimeString);
         }
-
     }
-
 }

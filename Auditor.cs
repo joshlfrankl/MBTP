@@ -46,7 +46,7 @@ namespace AuditorNS
                 length INTEGER NOT NULL,
                 gates INTEGER NOT NULL,
                 genome TEXT NOT NULL,
-                log TEXT)";
+                datalog TEXT NOT NULL)";
                 Command.ExecuteNonQuery();
 
                 Command.CommandText = @" DROP TABLE IF EXISTS 'avgOrgs';
@@ -128,7 +128,7 @@ namespace AuditorNS
                 using (var transaction = SqliteConn.BeginTransaction())
                 {
                     var Command = SqliteConn.CreateCommand();
-                    Command.CommandText = @"INSERT INTO maxOrgs (generation, fitness, length, gates, genome, log) VALUES ($generation, $fitness, $length, $gates, $genome, $log)";
+                    Command.CommandText = @"INSERT INTO maxOrgs (generation, fitness, length, gates, genome, datalog) VALUES ($generation, $fitness, $length, $gates, $genome, $log)";
 
                     var GenerationParameter = Command.CreateParameter();
                     GenerationParameter.ParameterName = "$generation";
@@ -156,9 +156,9 @@ namespace AuditorNS
                     GenomeParameter.Value = string.Join(",", org.GetGenome().Genome);
 
                     var LogParameter = Command.CreateParameter();
-                    GenomeParameter.ParameterName = "$log";
+                    LogParameter.ParameterName = "$log";
                     Command.Parameters.Add(LogParameter);
-                    GenomeParameter.Value = org.GetStats();
+                    LogParameter.Value = org.GetStats();
 
                     Command.ExecuteNonQuery();
 
