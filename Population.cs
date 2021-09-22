@@ -198,10 +198,6 @@ namespace PopulationNS
 
             if (Convert.ToBoolean(Configuration.Config["compressDumpedPopulations?"]))
             {
-                // using (ZipArchive DBZip = ZipFile.Open(string.Format("{0}.zip", Configuration.Config["dumpPopulationPath"]), ZipArchiveMode.Update))
-                // {
-                //     DBZip.CreateEntryFromFile(Configuration.Config["dumpPopulationPath"], "dump.db");
-                // }
                 using (FileStream DbToCompress = File.OpenRead($"{Configuration.Config["dumpPopulationPath"]}")) 
                 {
                     using (FileStream CompressedDb = File.Create($"{Configuration.Config["dumpPopulationPath"]}.gz"))
@@ -213,6 +209,8 @@ namespace PopulationNS
                         }
                     }
                 }
+                Console.WriteLine($"Deleting {Configuration.Config["dumpPopulationPath"]}");
+                File.Delete($"{Configuration.Config["dumpPopulationPath"]}");
             }
 
             string TotalTimeString = String.Format("Dumping population took: {0:F4}s\n\n", DumpTimer.Elapsed.TotalSeconds);

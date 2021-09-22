@@ -32,7 +32,7 @@ experimentName: "MoveTaskTest"
 DBPath: "/tmp/out_db.db"                                    # Path to statistics DB
 dumpPopulationPath: "/tmp/population_dump.db"               # Path to save the population after execution
 loadPopulationPath: "/tmp/population_dump.db"               # Path to load a population from a file
-compressDumpedPopulations?: "False"                         # Can only compress dumped populations smaller than 2GB
+compressDumpedPopulations?: "False"                         # Gzip the dumped population to reduce size by ~90%? Deletes the uncompressed file.
 loadPopulationFromFile?: "False"                            # Load a saved population from a file? If not, a randomly generated population is used
 generations: 100                                            # Number of generations before stopping
 randomSeed: 0                                               # 0 for a randomized seed, which will be printed on startup
