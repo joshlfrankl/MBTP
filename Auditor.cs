@@ -39,23 +39,49 @@ namespace AuditorNS
             {
                 SqliteConn.Open();
                 var Command = SqliteConn.CreateCommand();
-                Command.CommandText = @" DROP TABLE IF EXISTS 'maxOrgs';
-                CREATE TABLE maxOrgs (id INTEGER PRIMARY KEY,
+                Command.CommandText = @" CREATE TABLE IF NOT EXISTS 'max_orgs' (id INTEGER PRIMARY KEY,
                 generation INTEGER NOT NULL,
                 fitness REAL NOT NULL,
                 length INTEGER NOT NULL,
                 gates INTEGER NOT NULL,
                 genome TEXT NOT NULL,
-                datalog TEXT NOT NULL)";
+                datalog TEXT NOT NULL,
+                experiment_id TEXT NOT NULL)";
                 Command.ExecuteNonQuery();
 
-                Command.CommandText = @" DROP TABLE IF EXISTS 'avgOrgs';
-                CREATE TABLE avgOrgs (id INTEGER PRIMARY KEY,
+                Command.CommandText = @" CREATE TABLE IF NOT EXISTS 'avg_orgs' (id INTEGER PRIMARY KEY,
                 generation INTEGER NOT NULL,
                 fitness REAL NOT NULL,
                 length REAL NOT NULL,
-                gates REAL NOT NULL)";
+                gates REAL NOT NULL,
+                experiment_id TEXT NOT NULL)";
                 Command.ExecuteNonQuery();
+
+                Command.CommandText = @" CREATE TABLE IF NOT EXISTS 'experiments' (experiment_id TEXT PRIMARY KEY,
+                config TEXT NOT NULL)";
+                Command.ExecuteNonQuery();
+
+                // Insert the experiment info into the experiments table
+                using (var transaction = SqliteConn.BeginTransaction()) 
+                {
+                var InsertCommand = SqliteConn.CreateCommand();
+                InsertCommand.CommandText = $@" INSERT INTO experiments (experiment_id, config) VALUES ($uuid, $exp_config)";
+                var ExperimentIdParameter = InsertCommand.CreateParameter();
+                ExperimentIdParameter.ParameterName = "$uuid";
+                InsertCommand.Parameters.Add(ExperimentIdParameter);
+                ExperimentIdParameter.Value = Configuration.Config["UUID"];
+
+                var ExperimentConfigParameter = InsertCommand.CreateParameter();
+                ExperimentConfigParameter.ParameterName = "$exp_config";
+                InsertCommand.Parameters.Add(ExperimentConfigParameter);
+                ExperimentConfigParameter.Value = string.Join("\n", Configuration.Config);
+                
+                InsertCommand.ExecuteNonQuery();
+                transaction.Commit();
+                }
+
+
+
             }
         }
 
@@ -128,7 +154,8 @@ namespace AuditorNS
                 using (var transaction = SqliteConn.BeginTransaction())
                 {
                     var Command = SqliteConn.CreateCommand();
-                    Command.CommandText = @"INSERT INTO maxOrgs (generation, fitness, length, gates, genome, datalog) VALUES ($generation, $fitness, $length, $gates, $genome, $log)";
+                    Command.CommandText = @"INSERT INTO max_orgs (generation, fitness, length, gates, genome, datalog, experiment_id)
+                    VALUES ($generation, $fitness, $length, $gates, $genome, $log, $uuid)";
 
                     var GenerationParameter = Command.CreateParameter();
                     GenerationParameter.ParameterName = "$generation";
@@ -160,6 +187,11 @@ namespace AuditorNS
                     Command.Parameters.Add(LogParameter);
                     LogParameter.Value = org.GetStats();
 
+                    var UuidParameter = Command.CreateParameter();
+                    UuidParameter.ParameterName = "$uuid";
+                    Command.Parameters.Add(UuidParameter);
+                    UuidParameter.Value = Configuration.Config["UUID"];
+
                     Command.ExecuteNonQuery();
 
                     transaction.Commit();
@@ -174,30 +206,36 @@ namespace AuditorNS
                 sqliteConn.Open();
                 using (var transaction = sqliteConn.BeginTransaction())
                 {
-                    var command = sqliteConn.CreateCommand();
-                    command.CommandText = @"INSERT INTO avgOrgs (generation, fitness, length, gates) VALUES ($generation, $fitness, $length, $gates)";
+                    var Command = sqliteConn.CreateCommand();
+                    Command.CommandText = @"INSERT INTO avg_orgs (generation, fitness, length, gates, experiment_id) 
+                    VALUES ($generation, $fitness, $length, $gates, $uuid)";
 
-                    var generationParameter = command.CreateParameter();
+                    var generationParameter = Command.CreateParameter();
                     generationParameter.ParameterName = "$generation";
-                    command.Parameters.Add(generationParameter);
+                    Command.Parameters.Add(generationParameter);
                     generationParameter.Value = Population.Generation;
 
-                    var fitnessParameter = command.CreateParameter();
+                    var fitnessParameter = Command.CreateParameter();
                     fitnessParameter.ParameterName = "$fitness";
-                    command.Parameters.Add(fitnessParameter);
+                    Command.Parameters.Add(fitnessParameter);
                     fitnessParameter.Value = Stats["meanFitness"];
 
-                    var lengthParameter = command.CreateParameter();
+                    var lengthParameter = Command.CreateParameter();
                     lengthParameter.ParameterName = "$length";
-                    command.Parameters.Add(lengthParameter);
+                    Command.Parameters.Add(lengthParameter);
                     lengthParameter.Value = Stats["meanLength"];
 
-                    var gatesParameter = command.CreateParameter();
+                    var gatesParameter = Command.CreateParameter();
                     gatesParameter.ParameterName = "$gates";
-                    command.Parameters.Add(gatesParameter);
+                    Command.Parameters.Add(gatesParameter);
                     gatesParameter.Value = Stats["meanGates"];
 
-                    command.ExecuteNonQuery();
+                    var UuidParameter = Command.CreateParameter();
+                    UuidParameter.ParameterName = "$uuid";
+                    Command.Parameters.Add(UuidParameter);
+                    UuidParameter.Value = Configuration.Config["UUID"];
+
+                    Command.ExecuteNonQuery();
 
                     transaction.Commit();
                 }

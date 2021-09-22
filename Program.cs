@@ -35,6 +35,8 @@ namespace MBTP
             string ConfigString = System.IO.File.ReadAllText(@"./settings.yaml");
             var Deserializer = new DeserializerBuilder().Build();
             Dictionary<string, string> Config = Deserializer.Deserialize<Dictionary<string, string>>(ConfigString);
+            Config["UUID"] = System.Guid.NewGuid().ToString();
+
             Configuration.Config = Config;
 
             RunExperimentFromScratch(Convert.ToBoolean(Configuration.Config["loadPopulationFromFile?"]));

@@ -36,5 +36,5 @@ compressDumpedPopulations?: "False"                         # Gzip the dumped po
 loadPopulationFromFile?: "False"                            # Load a saved population from a file? If not, a randomly generated population is used
 generations: 100                                            # Number of generations before stopping
 randomSeed: 0                                               # 0 for a randomized seed, which will be printed on startup
-dumpImages?: "True"                                         # Save images for the task?
+dumpImages?: "False"                                         # Save images for the task?
 renderPath: "/tmp/image_dump"                               # Path to save the images
