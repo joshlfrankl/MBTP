@@ -28,8 +28,8 @@ namespace AuditorNS
         private TaskPopulation Population;
         public Dictionary<String, double> Stats;
 
-        public Action<TaskOrganism, string, bool> Task;
-        public Auditor(TaskPopulation population, String outpath, Action<TaskOrganism, string, bool> task)
+        public Action<TaskOrganism, int, string, bool> Task;
+        public Auditor(TaskPopulation population, String outpath, Action<TaskOrganism, int, string, bool> task)
         {
             this.Population = population;
             this.Task = task;
@@ -69,12 +69,12 @@ namespace AuditorNS
                 var ExperimentIdParameter = InsertCommand.CreateParameter();
                 ExperimentIdParameter.ParameterName = "$uuid";
                 InsertCommand.Parameters.Add(ExperimentIdParameter);
-                ExperimentIdParameter.Value = Configuration.Config["UUID"];
+                ExperimentIdParameter.Value = Configuration.GetStringValue("UUID");
 
                 var ExperimentConfigParameter = InsertCommand.CreateParameter();
                 ExperimentConfigParameter.ParameterName = "$exp_config";
                 InsertCommand.Parameters.Add(ExperimentConfigParameter);
-                ExperimentConfigParameter.Value = string.Join("\n", Configuration.Config);
+                ExperimentConfigParameter.Value = Configuration.DumpCurrentConfiguration();
                 
                 InsertCommand.ExecuteNonQuery();
                 transaction.Commit();
@@ -82,12 +82,12 @@ namespace AuditorNS
             }
         }
 
-        public void Audit(int generation)
+        public void Audit(int generation, int seed)
         {
-            UpdateStats(generation);
+            UpdateStats(generation, seed);
         }
 
-        public void UpdateStats(int generation)
+        private void UpdateStats(int generation, int seed)
         { // Returns idx of highest fitness org
             double MaxFitness = Single.NegativeInfinity;
             double FitnessAcc = 0.0;
@@ -133,13 +133,13 @@ namespace AuditorNS
             Stats["maxGates"] = MaxGates;
             Stats["maxLength"] = MaxLength;
 
-            if (Convert.ToBoolean(Configuration.Config["dumpImages?"])) // Needs to go before RecordMaxOrg to record logdata.
+            if (Configuration.GetBoolValue("dumpImages?")) // Needs to go before RecordMaxOrg to record logdata.
             {
-                Console.WriteLine("Rendering max org...");
-                Task(Population.Orgs[MaxIdx], $"gen{generation}", true);
+                //Console.WriteLine("Rendering max org...");
+                Task(Population.Orgs[MaxIdx], generation + seed, $"gen{generation}", true);
             } else
             {
-                Task(Population.Orgs[MaxIdx], "", true);
+                Task(Population.Orgs[MaxIdx], generation + seed, "", true);
             }
 
             RecordAvgOrg();
@@ -190,7 +190,7 @@ namespace AuditorNS
                     var UuidParameter = Command.CreateParameter();
                     UuidParameter.ParameterName = "$uuid";
                     Command.Parameters.Add(UuidParameter);
-                    UuidParameter.Value = Configuration.Config["UUID"];
+                    UuidParameter.Value = Configuration.GetStringValue("UUID");
 
                     Command.ExecuteNonQuery();
 
@@ -233,7 +233,7 @@ namespace AuditorNS
                     var UuidParameter = Command.CreateParameter();
                     UuidParameter.ParameterName = "$uuid";
                     Command.Parameters.Add(UuidParameter);
-                    UuidParameter.Value = Configuration.Config["UUID"];
+                    UuidParameter.Value = Configuration.GetStringValue("UUID");
 
                     Command.ExecuteNonQuery();
 

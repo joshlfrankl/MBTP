@@ -22,10 +22,25 @@ using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using Organism;
 using Global;
+using JSFDN;
 
 namespace Tasks
 {
-    class Utils
+    class TaskUtils
+    {
+        public static Dictionary<string, Action<TaskOrganism, int, string, bool>> GetTasks() {
+            var availableTasks = new Dictionary<string, Action<TaskOrganism, int, string, bool>>()
+            {
+                {"HomingTask", HomingTask.Run},
+                {"ChemotaxisTask", ChemotaxisTask.Run},
+                {"SumTask", SumTask.Run},
+                {"BlockCatchingTask", BlockCatchingTask.Run},
+            };
+            return(availableTasks);
+        }
+    }
+
+    class BrainUtils
     {
         public static FontCollection Collection = new FontCollection();
         public static FontFamily FontFam = Collection.Install($"{AppDomain.CurrentDomain.BaseDirectory}/fonts/RobotoMono-Light.ttf");
@@ -47,32 +62,42 @@ namespace Tasks
         }
     }
 
-    class MoveTask
+    class HomingTask
     {
-
-        public static void Run(TaskOrganism org, string dirName, bool logData)
+        public static void Run(TaskOrganism org, int seed, string dirName, bool logData)
         {   
-            double TargetX = 25.0;
-            double TargetY = 25.0;
-            int NumUpdates = 100;
+            int NumUpdates = Global.Configuration.GetInt32Value("homingNumUpdates");
+            int NumBrainTicks = Global.Configuration.GetInt32Value("homingBrainTicksPerUpdate");
+            
+            double TargetX = Global.Configuration.GetDoubleValue("homingTargetX");
+            double TargetY = Global.Configuration.GetDoubleValue("homingTargetY");
+            double OrgMaxSpeed = Global.Configuration.GetDoubleValue("homingOrgSpeed");
+            double OrgAngle = Global.Configuration.GetDoubleValue("homingStartingAngle");
+            double OrgSpeed = OrgMaxSpeed;
+
+            bool ClockInput = Global.Configuration.GetBoolValue("homingClockInput?");
+            bool SpeedOutput = Global.Configuration.GetBoolValue("homingSpeedOutput?");
+
             List<string> Log = new List<string>(NumUpdates);
 
-            double OrgX = 0.0;
-            double OrgY = 0.0;
-            double OrgAngle = 0.0;
-            double OrgSpeed = 1.0;
+            double OrgX = 0.0; 
+            double OrgY = 0.0; 
 
             if (dirName != "")
             {
-                System.IO.Directory.CreateDirectory($"{Global.Configuration.Config["renderPath"]}/{dirName}");
+                System.IO.Directory.CreateDirectory($"{Global.Configuration.GetStringValue("renderPath")}/{dirName}");
             }
 
             org.ZeroMemory();
 
             for (int i = 0; i < NumUpdates; i++)
             {   
-                //org.SetMemory(4, (byte) i);
-                org.Run(1);
+                if (ClockInput)
+                {
+                    org.SetMemory(2, (byte) i);
+                }
+                
+                org.Run(NumBrainTicks);
 
                 int turn = org.GetMemory(0);
                 if (turn < 100)
@@ -81,11 +106,14 @@ namespace Tasks
                 } else if (turn < 200) {
                     OrgAngle -= 0.1;
                 } else {
-                    // Nothing
+                    // Straight ahead
                 }
 
-                OrgSpeed = (org.GetMemory(1) / 255.0);
-
+                if (SpeedOutput)
+                {
+                    OrgSpeed = (org.GetMemory(1) / 255.0) * OrgMaxSpeed;
+                }
+                
                 OrgX += Math.Cos(OrgAngle) * OrgSpeed;
                 OrgY += Math.Sin(OrgAngle) * OrgSpeed;
 
@@ -124,59 +152,75 @@ namespace Tasks
                                                  10.0f, 10.0f);
                     frameCtx.Fill(Color.Wheat, o);
                     frameCtx.Fill(Color.RoyalBlue, target);
-                    Utils.RenderBrain(frame, org);
+                    BrainUtils.RenderBrain(frame, org);
                 });
-                frame.SaveAsPng($"{Global.Configuration.Config["renderPath"]}/{dirName}/{i}.png");
+                frame.SaveAsPng($"{Global.Configuration.GetStringValue("renderPath")}/{dirName}/{i}.png");
             }
         }
     }
 
     class ChemotaxisTask
     {
-        private static int numUpdates = 500;
-
         public static double dist(double x1, double y1, double x2, double y2)
         {
             return (Math.Sqrt(Math.Pow(x1 - x2, 2.0) + Math.Pow(y1 - y2, 2.0)));
         }
 
-        public static void run(TaskOrganism org, string dirName)
+        public static void Run(TaskOrganism org, int seed, string dirName, bool logData)
         {
-            double[] scores = new double[5];
-            for (int n = 0; n < 5; n++)
+            int NumUpdates = Global.Configuration.GetInt32Value("ctNumUpdates");
+            int NumReps = Global.Configuration.GetInt32Value("ctNumReps");
+            int MaxXYDistance = Global.Configuration.GetInt32Value("ctMaxXYDist");
+            int NumBrainTicks = Global.Configuration.GetInt32Value("ctBrainTicksPerUpdate");
+
+            double MinDistance = Global.Configuration.GetDoubleValue("ctMinDist");
+
+            bool usePopConsistSeed = Global.Configuration.GetBoolValue("ctUsePopulationConsistentSeed?");
+            JSFRng PopConsistentRNG;
+
+            if (usePopConsistSeed)
             {
-                double orgX = org.GetDouble();
-                double orgY = org.GetDouble();
-                double orgAngle = org.GetDouble() * 2.0 * Math.PI;
+                PopConsistentRNG = new JSFRng(seed); // Use the same seed across whole population, to avoid lucky/unlucky orgs.
+            } else
+            {
+                PopConsistentRNG = new JSFRng(org.GetNext());
+            }
+
+            double[] scores = new double[NumReps];
+            for (int n = 0; n < NumReps; n++)
+            {
+                double orgX = PopConsistentRNG.NextDouble();
+                double orgY = PopConsistentRNG.NextDouble();
+                double orgAngle = PopConsistentRNG.NextDouble() * 2.0 * Math.PI;
 
                 double targetX = 0;
                 double targetY = 0;
 
-                while (dist(0, 0, targetX, targetY) < 15.0)
+                while (dist(0, 0, targetX, targetY) < MinDistance)
                 {
-                    targetX = org.GetNext(50) + org.GetDouble();
-                    targetY = org.GetNext(50) + org.GetDouble();
-                    if (org.GetNext() % 2 == 0)
+                    targetX = PopConsistentRNG.Next(MaxXYDistance) + PopConsistentRNG.NextDouble();
+                    targetY = PopConsistentRNG.Next(MaxXYDistance) + PopConsistentRNG.NextDouble();
+                    if (PopConsistentRNG.Next() % 2 == 0)
                     {
                         targetX = -targetX;
                     }
 
-                    if (org.GetNext() % 2 == 0)
+                    if (PopConsistentRNG.Next() % 2 == 0)
                     {
                         targetY = -targetY;
                     }
                 }
 
-                int finalUpdate = numUpdates;
+                int finalUpdate = NumUpdates;
 
                 if (dirName != "")
                 {
-                    System.IO.Directory.CreateDirectory($"{Global.Configuration.Config["renderPath"]}/{dirName}");
+                    System.IO.Directory.CreateDirectory($"{Global.Configuration.GetStringValue("renderPath")}/{dirName}");
                 }
 
                 org.ZeroMemory();
 
-                for (int i = 0; i < numUpdates; i++)
+                for (int i = 0; i < NumUpdates; i++)
                 {
                     double shift = org.GetMemory(2) + 1.0;
                     double growth = org.GetMemory(3) + 1.0;
@@ -184,7 +228,7 @@ namespace Tasks
 
                     for (int j = 5; j < 8; j++)
                     {
-                        if (org.GetDouble() < probSig)
+                        if (PopConsistentRNG.NextDouble() < probSig)
                         {
                             org.SetMemory(j, 10);
                         }
@@ -194,12 +238,12 @@ namespace Tasks
                         }
                     }
 
-                    org.Run(1);
+                    org.Run(NumBrainTicks);
 
                     int turn = org.GetMemory(0);
                     if (turn > 200)
                     {
-                        orgAngle = org.GetDouble() * 2.0 * Math.PI;
+                        orgAngle = PopConsistentRNG.NextDouble() * 2.0 * Math.PI;
                     }
                     else
                     {
@@ -216,12 +260,12 @@ namespace Tasks
                 }
                 scores[n] = (1 / dist(orgX, orgY, targetX, targetY));
             }
-            double score = 0;
-            for (int i = 0; i < 5; i++)
+            double score = 0.0;
+            for (int i = 0; i < NumReps; i++)
             {
                 score += scores[i];
             }
-            org.SetFitness(score / 5);
+            org.SetFitness(score / NumReps);
         }
 
         private static void render(TaskOrganism org, string dirName, int i, double orgX, double orgY, double orgAngle, double targetX, double targetY)
@@ -245,18 +289,19 @@ namespace Tasks
                                                  10.0f, 10.0f);
                     frameCtx.Fill(Color.Wheat, o);
                     frameCtx.Fill(Color.RoyalBlue, target);
-                    Utils.RenderBrain(frame, org);
+                    BrainUtils.RenderBrain(frame, org);
                 });
-                frame.SaveAsPng($"{Global.Configuration.Config["renderPath"]}/{dirName}/{i}.png");
+                frame.SaveAsPng($"{Global.Configuration.GetStringValue("renderPath")}/{dirName}/{i}.png");
             }
         }
     }
 
     class SumTask
     {
-        public static void run(TaskOrganism org, string render)
-        {
-            org.Run(1);
+        public static void Run(TaskOrganism org, int seed, string dirName, bool logData)
+        {   
+            int NumBrainTicks = Global.Configuration.GetInt32Value("sumNumBrainTicks");
+            org.Run(NumBrainTicks);
             int t = 0;
             for (int i = 0; i < org.GetMemoryLength(); i++)
             {
@@ -269,20 +314,33 @@ namespace Tasks
 
     class BlockCatchingTask
     {
-        public static void run(TaskOrganism org, string render)
-        {
-            const int simHeight = 20;
-            const int simWidth = 16;
-            const int numIters = 400;
-            const int numRounds = 8;
+        public static void Run(TaskOrganism org, int seed, string dirName, bool logData)
+        {   
+            int simHeight = Global.Configuration.GetInt32Value("blockCatchSimHeight");
+            int simWidth = Global.Configuration.GetInt32Value("blockCatchSimWidth");
+            int numIters = Global.Configuration.GetInt32Value("blockCatchNumUpdates");
+            int numRounds = Global.Configuration.GetInt32Value("blockCatchNumTrials");
 
             int totalScore = 0;
+            int totalBlocks = 0;
+
+            bool usePopConsistSeed = Global.Configuration.GetBoolValue("blockCatchUsePopulationConsistentSeed?");
+            JSFRng PopConsistentRNG;
+
+            if (usePopConsistSeed)
+            {
+                PopConsistentRNG = new JSFRng(seed); // Use the same seed across whole population, to avoid lucky/unlucky orgs.
+            } else
+            {
+                PopConsistentRNG = new JSFRng(org.GetNext());
+            }
 
             for (int j = 0; j < numRounds; j++)
             {
                 int orgX = 0;
-                int blockX = org.GetNext(simWidth);
+                int blockX = PopConsistentRNG.Next(simWidth);
                 int blockY = simHeight;
+                totalBlocks += 1;
                 int score = 0;
                 org.ZeroMemory();
 
@@ -297,7 +355,8 @@ namespace Tasks
                             org.SetMemory(1, 255);
                         }
                         blockY = simHeight;
-                        blockX = org.GetNext(simWidth);
+                        blockX = PopConsistentRNG.Next(simWidth);
+                        totalBlocks += 1;
                     }
                     else
                     {
@@ -336,7 +395,8 @@ namespace Tasks
                 }
                 totalScore += score;
             }
-            org.SetFitness(org.GetFitness() + (totalScore / (((double)(numIters * numRounds) / (double)simHeight) - numRounds)));
+            // Fitness is the proportion of blocks caught.
+            org.SetFitness((double) totalScore / (double) totalBlocks);
         }
     }
 }

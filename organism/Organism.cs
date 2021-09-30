@@ -37,8 +37,8 @@ namespace Organism
         public TaskOrganism(int genomeLength, int randomSeed)
         {
             this.Rng = new JSFRng(randomSeed);
-            this.Genome = ByteGenome.RandByteGenome(genomeLength, Convert.ToInt32(Configuration.Config["seedGates"]), Rng);
-            this.Brain = new Brain(Convert.ToInt32(Configuration.Config["memorySize"]), this.Genome);
+            this.Genome = ByteGenome.RandByteGenome(genomeLength, Configuration.GetInt32Value("seedGates"), Rng);
+            this.Brain = new Brain(Configuration.GetInt32Value("memorySize"), this.Genome);
             this.Fitness = 0.0;
             this.Stats = "";
         }
@@ -48,7 +48,7 @@ namespace Organism
             this.Rng = new JSFRng(randomSeed);
             this.Genome = parent.Genome.Clone();
             mutator.MutateGenome(this.Genome, this.Rng);
-            this.Brain = new Brain(Convert.ToInt32(Configuration.Config["memorySize"]), this.Genome);
+            this.Brain = new Brain(Configuration.GetInt32Value("memorySize"), this.Genome);
             this.Fitness = 0.0;
             this.Stats = "";
         }
@@ -57,7 +57,7 @@ namespace Organism
         { // For seeding from DB with rng state string
             this.Rng = new JSFRng(rngState);
             this.Genome = g.Clone();
-            this.Brain = new Brain(Convert.ToInt32(Configuration.Config["memorySize"]), this.Genome);
+            this.Brain = new Brain(Configuration.GetInt32Value("memorySize"), this.Genome);
             this.Fitness = 0.0;
             this.Stats = "";
         }
@@ -66,7 +66,7 @@ namespace Organism
         {
             this.Rng = new JSFRng(randomSeed);
             this.Genome = g.Clone();
-            this.Brain = new Brain(Convert.ToInt32(Configuration.Config["memorySize"]), this.Genome);
+            this.Brain = new Brain(Configuration.GetInt32Value("memorySize"), this.Genome);
             this.Fitness = 0.0;
             this.Stats = "";
         }

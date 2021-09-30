@@ -18,6 +18,7 @@ using System.Linq;
 using System.Collections.Generic;
 using MathNet.Numerics.Distributions;
 using JSFDN;
+using Global;
 
 
 namespace Genome
@@ -167,25 +168,25 @@ namespace Genome
 
         public double CrossoverRate { get; }
 
-        public Mutator(Dictionary<string, string> mutationRateDict)
+        public Mutator()
         {
-            PointRatePerGenome = Math.Clamp(Convert.ToDouble(mutationRateDict["pointRatePerGenome"]), 0.0, 1000.0);
-            InsertionRatePerGenome = Math.Clamp(Convert.ToDouble(mutationRateDict["insertionRatePerGenome"]), 0.0, 1000.0);
-            InsertionRelSize = Math.Clamp(Convert.ToDouble(mutationRateDict["insertionRelSize"]), 0.0, 1.0);
-            DeletionRatePerGenome = Math.Clamp(Convert.ToDouble(mutationRateDict["deletionRatePerGenome"]), 0.0, 1000.0);
-            DeletionRelSize = Math.Clamp(Convert.ToDouble(mutationRateDict["deletionRelSize"]), 0.0, 1.0);
-            InversionRatePerGenome = Math.Clamp(Convert.ToDouble(mutationRateDict["inversionRatePerGenome"]), 0.0, 1000.0);
-            InversionRelSize = Math.Clamp(Convert.ToDouble(mutationRateDict["inversionRelSize"]), 0.0, 1.0);
-            ReversalRatePerGenome = Math.Clamp(Convert.ToDouble(mutationRateDict["reversalRatePerGenome"]), 0.0, 1000.0);
-            ReversalRelSize = Math.Clamp(Convert.ToDouble(mutationRateDict["reversalRelSize"]), 0.0, 1.0);
-            DuplicationRatePerGenome = Math.Clamp(Convert.ToDouble(mutationRateDict["duplicationRatePerGenome"]), 0.0, 1000.0);
-            DuplicationRelSize = Math.Clamp(Convert.ToDouble(mutationRateDict["duplicationRelSize"]), 0.0, 1.0);
+            PointRatePerGenome = Math.Clamp(Configuration.GetDoubleValue("pointRatePerGenome"), 0.0, 1000.0);
+            InsertionRatePerGenome = Math.Clamp(Configuration.GetDoubleValue("insertionRatePerGenome"), 0.0, 1000.0);
+            InsertionRelSize = Math.Clamp(Configuration.GetDoubleValue("insertionRelSize"), 0.0, 1.0);
+            DeletionRatePerGenome = Math.Clamp(Configuration.GetDoubleValue("deletionRatePerGenome"), 0.0, 1000.0);
+            DeletionRelSize = Math.Clamp(Configuration.GetDoubleValue("deletionRelSize"), 0.0, 1.0);
+            InversionRatePerGenome = Math.Clamp(Configuration.GetDoubleValue("inversionRatePerGenome"), 0.0, 1000.0);
+            InversionRelSize = Math.Clamp(Configuration.GetDoubleValue("inversionRelSize"), 0.0, 1.0);
+            ReversalRatePerGenome = Math.Clamp(Configuration.GetDoubleValue("reversalRatePerGenome"), 0.0, 1000.0);
+            ReversalRelSize = Math.Clamp(Configuration.GetDoubleValue("reversalRelSize"), 0.0, 1.0);
+            DuplicationRatePerGenome = Math.Clamp(Configuration.GetDoubleValue("duplicationRatePerGenome"), 0.0, 1000.0);
+            DuplicationRelSize = Math.Clamp(Configuration.GetDoubleValue("duplicationRelSize"), 0.0, 1.0);
 
-            SwapRatePerGenome = Math.Clamp(Convert.ToDouble(mutationRateDict["swapRatePerGenome"]), 0.0, 1000.0);
-            IncrementRatePerGenome = Math.Clamp(Convert.ToDouble(mutationRateDict["incrementRatePerGenome"]), 0.0, 1000.0);
-            DecrementRatePerGenome = Math.Clamp(Convert.ToDouble(mutationRateDict["decrementRatePerGenome"]), 0.0, 1000.0);
+            SwapRatePerGenome = Math.Clamp(Configuration.GetDoubleValue("swapRatePerGenome"), 0.0, 1000.0);
+            IncrementRatePerGenome = Math.Clamp(Configuration.GetDoubleValue("incrementRatePerGenome"), 0.0, 1000.0);
+            DecrementRatePerGenome = Math.Clamp(Configuration.GetDoubleValue("decrementRatePerGenome"), 0.0, 1000.0);
 
-            CrossoverRate = Math.Clamp(Convert.ToDouble(mutationRateDict["crossoverRate"]), 0.0, 1000.0);
+            CrossoverRate = Math.Clamp(Configuration.GetDoubleValue("crossoverRate"), 0.0, 1000.0);
         }
 
         public void MutateGenome(ByteGenome genome, JSFRng rng)

@@ -1,5 +1,5 @@
 # Mutation settings
-pointRatePerGenome: 0.5           # Rates are lambda parameter of poisson distribution
+pointRatePerGenome: 0.5           # Rates are lambda parameter of poisson distributionf
 insertionRatePerGenome: 0.01      
 insertionRelSize: 0.05            # Proportion of genome size
 deletionRatePerGenome: 0.01
@@ -28,7 +28,7 @@ kProportion: 0.001                 # Proportion of population in each tournament
 nProportion: 0.05                  # How many tournaments occur as a proportion of population size
 
 # Experiment settings
-experimentName: "MoveTaskTest"
+experimentName: "HomingTaskTest"
 DBPath: "/tmp/out_db.db"                                    # Path to statistics DB
 dumpFinalPopulation?: "False"
 dumpPopulationPath: "/tmp/population_dump.db"               # Path to save the population after execution
@@ -37,5 +37,36 @@ compressDumpedPopulations?: "False"                         # Gzip the dumped po
 loadPopulationFromFile?: "False"                            # Load a saved population from a file? If not, a randomly generated population is used
 generations: 100                                            # Number of generations before stopping
 randomSeed: 0                                               # 0 for a randomized seed, which will be printed on startup
-dumpImages?: "False"                                         # Save images for the task?
+dumpImages?: "True"                                         # Save images for the task?
 renderPath: "/tmp/image_dump"                               # Path to save the images
+
+# Task selection
+taskName: "BlockCatchingTask"					# Which task should be used?
+
+# Homing task settings
+homingSpeedOutput?: "False"				# Set speed using node 1? Speed on each update will be [value_of_node_1]/255 * orgSpeed
+homingClockInput?: "False"				# Set node 2 to the current step number?
+homingTargetX: 25.0					# X-coordinate of target
+homingTargetY: 25.0					# Y-coordinate of target
+homingNumUpdates: 100					# Number of task updates
+homingOrgSpeed: 1.0					# How far does the organism move on each tick?
+homingStartingAngle: 0.0				# What direction is the organism pointing at the start? (Radians counter-clockwise from the positive x-axis)
+homingBrainTicksPerUpdate: 1				# How many times does the brain tick on each task update?
+
+# Chemotaxis task settings
+ctUsePopulationConsistentSeed?: "True"		# Use the same seed across all organisms within the population? All orgs will get the same random numbers.
+ctNumUpdates: 1000					# Number of task updates
+ctNumReps: 3						# How many times is the task repeated? Scores are averaged to determine the final fitness.
+ctMaxXYDist: 50					# How far might the target be positioned from the origin along the X or Y axes?
+ctBrainTicksPerUpdate: 1				# How many times does the brain tick on each task update?
+ctMinDist: 15.0					# What is the minimum distance of the target from the origin?
+
+#Sum task settings
+sumNumBrainTicks: 1					# How many times does the Markov Brain tick before finishing the task?
+
+# Block catching task settings
+blockCatchUsePopulationConsistentSeed?: "True"	# Use the same seed across all organisms within the population? All orgs will get the same random numbers.
+blockCatchSimHeight: 32				# How tall is the arena? Blocks fall one unit per update. (Integer)
+blockCatchSimWidth: 16					# How wide is the arena? The org can move left or right one unit per update.(Integer)
+blockCatchNumUpdates: 128				# How many updates?
+blockCatchNumTrials: 5					# How many repeated trials?

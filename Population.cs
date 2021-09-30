@@ -53,7 +53,7 @@ namespace PopulationNS
         public TaskPopulation(string filepath, Mutator mutator)
         {
             MutationSchema = mutator;
-            string DBstring = new SqliteConnectionStringBuilder(String.Format("Data Source={0}", Configuration.Config["loadPopulationPath"])).ToString();
+            string DBstring = new SqliteConnectionStringBuilder($"Data Source={Configuration.GetStringValue("loadPopulationPath")}").ToString();
             Orgs = new List<TaskOrganism>();
             using (var SqliteConn = new SqliteConnection(DBstring))
             {
@@ -78,10 +78,10 @@ namespace PopulationNS
             }
         }
 
-        public void Tick(Action<TaskOrganism, string, bool> w)
+        public void Tick(Action<TaskOrganism, int, string, bool> w, int seed)
         {
             // Consider partitioner to reduce overhead?
-            Parallel.ForEach(Orgs, org => w(org, "", false));
+            Parallel.ForEach(Orgs, org => w(org, seed, "", false));
         }
 
         public void ReproTournament(int n, int k, bool sex)
@@ -149,7 +149,7 @@ namespace PopulationNS
         {
             Stopwatch DumpTimer = new Stopwatch();
             DumpTimer.Start();
-            string DBstring = new SqliteConnectionStringBuilder(String.Format("Data Source={0}", Configuration.Config["dumpPopulationPath"])).ToString();
+            string DBstring = new SqliteConnectionStringBuilder($"Data Source={Configuration.GetStringValue("dumpPopulationPath")}").ToString();
             using (var SqliteConn = new SqliteConnection(DBstring))
             {
                 SqliteConn.Open();
@@ -200,21 +200,21 @@ namespace PopulationNS
                 }
             }
 
-            if (Convert.ToBoolean(Configuration.Config["compressDumpedPopulations?"]))
+            if (Configuration.GetBoolValue("compressDumpedPopulations?"))
             {
-                using (FileStream DbToCompress = File.OpenRead($"{Configuration.Config["dumpPopulationPath"]}")) 
+                using (FileStream DbToCompress = File.OpenRead($"{Configuration.GetStringValue("dumpPopulationPath")}")) 
                 {
-                    using (FileStream CompressedDb = File.Create($"{Configuration.Config["dumpPopulationPath"]}.gz"))
+                    using (FileStream CompressedDb = File.Create($"{Configuration.GetStringValue("dumpPopulationPath")}.gz"))
                     {
                         using (GZipStream DbCompressionStream = new GZipStream(CompressedDb, CompressionMode.Compress))
                         {   
-                            Console.WriteLine($"Compressing {Configuration.Config["dumpPopulationPath"]}");
+                            Console.WriteLine($"Compressing {Configuration.GetStringValue("dumpPopulationPath")}");
                             DbToCompress.CopyTo(DbCompressionStream);
                         }
                     }
                 }
-                Console.WriteLine($"Deleting {Configuration.Config["dumpPopulationPath"]}");
-                File.Delete($"{Configuration.Config["dumpPopulationPath"]}");
+                Console.WriteLine($"Deleting {Configuration.GetStringValue("dumpPopulationPath")}");
+                File.Delete($"{Configuration.GetStringValue("dumpPopulationPath")}");
             }
 
             string TotalTimeString = String.Format("Dumping population took: {0:F4}s\n\n", DumpTimer.Elapsed.TotalSeconds);
