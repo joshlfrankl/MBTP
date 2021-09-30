@@ -17,10 +17,13 @@ The settings.yaml file holds the configuration for MBTP. By editing the file, yo
 
 # Writing your own task
 Tasks must be of the type Action<TaskOrganism, int, string, bool>. 
-The first parameter is a TaskOrganism containing a Markov Brain. This is what you will evaluate to determine a fitness value.
-The int is a seed which can be used to have population-consistent randomness. This is helpful e.g. randomly setting a target on the XY plane, so that any "luck" is consistent across the population. Otherwise, you can use a per-organism random seed, but when you have 100k-1m organisms in your population, some are bound to get very "lucky" each generation.
-The third parameter is the name of the directory which will be used to save any rendered images or other files associated with this generation of organisms.
-The fourth parameter is a boolean which determines whether on not stats about this run should be saved into the organism's stats attribute (org.SetStats).
+* The first parameter is a TaskOrganism containing a Markov Brain. This is what you will evaluate to determine a fitness value.
+
+* The int is a seed which can be used to have population-consistent randomness. This is helpful e.g. randomly setting a target on the XY plane, so that any "luck" is consistent across the population. Otherwise, you can use a per-organism random seed, but when you have 100k-1m organisms in your population, some are bound to get very "lucky" each generation.
+
+* The third parameter is the name of the directory which will be used to save any rendered images or other files associated with this generation of organisms.
+
+* The fourth parameter is a boolean which determines whether on not stats about this run should be saved into the organism's stats attribute (org.SetStats).
 
 HomingTask is a good example of a basic, but non-trivial task to use as a guide.
 
