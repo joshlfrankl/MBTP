@@ -30,6 +30,7 @@ nProportion: 0.05                  # How many tournaments occur as a proportion 
 # Experiment settings
 experimentName: "MoveTaskTest"
 DBPath: "/tmp/out_db.db"                                    # Path to statistics DB
+dumpFinalPopulation?: "False"
 dumpPopulationPath: "/tmp/population_dump.db"               # Path to save the population after execution
 loadPopulationPath: "/tmp/population_dump.db"               # Path to load a population from a file
 compressDumpedPopulations?: "False"                         # Gzip the dumped population to reduce size by ~90%? Deletes the uncompressed file.

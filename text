@@ -1,0 +1,6 @@
+If a database exists, use it. Set up DB to have "experiment" table, then add foreign keys to maxOrgs and avgOrgs tables. Add "force overwrite" option to config.
+
+Set up configs for tasks.
+
+Set up "reps", to run N times.
+

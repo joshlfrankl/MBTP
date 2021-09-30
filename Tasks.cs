@@ -70,7 +70,8 @@ namespace Tasks
             org.ZeroMemory();
 
             for (int i = 0; i < NumUpdates; i++)
-            {
+            {   
+                //org.SetMemory(4, (byte) i);
                 org.Run(1);
 
                 int turn = org.GetMemory(0);
@@ -83,7 +84,7 @@ namespace Tasks
                     // Nothing
                 }
 
-                //OrgSpeed = (org.GetMemory(1) / 255.0);
+                OrgSpeed = (org.GetMemory(1) / 255.0);
 
                 OrgX += Math.Cos(OrgAngle) * OrgSpeed;
                 OrgY += Math.Sin(OrgAngle) * OrgSpeed;

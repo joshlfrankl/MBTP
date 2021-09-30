@@ -79,9 +79,6 @@ namespace AuditorNS
                 InsertCommand.ExecuteNonQuery();
                 transaction.Commit();
                 }
-
-
-
             }
         }
 
@@ -136,14 +133,17 @@ namespace AuditorNS
             Stats["maxGates"] = MaxGates;
             Stats["maxLength"] = MaxLength;
 
-            RecordAvgOrg();
-            RecordMaxOrg(Population.Orgs[MaxIdx]);
-
-            if (Convert.ToBoolean(Configuration.Config["dumpImages?"]))
+            if (Convert.ToBoolean(Configuration.Config["dumpImages?"])) // Needs to go before RecordMaxOrg to record logdata.
             {
                 Console.WriteLine("Rendering max org...");
                 Task(Population.Orgs[MaxIdx], $"gen{generation}", true);
+            } else
+            {
+                Task(Population.Orgs[MaxIdx], "", true);
             }
+
+            RecordAvgOrg();
+            RecordMaxOrg(Population.Orgs[MaxIdx]);
         }
 
         private void RecordMaxOrg(TaskOrganism org)

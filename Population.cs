@@ -183,6 +183,10 @@ namespace PopulationNS
                     var RngParameter = InsertCommand.CreateParameter();
                     RngParameter.ParameterName = "$randomseed";
                     InsertCommand.Parameters.Add(RngParameter);
+                    
+                    // Prepare requires known maximum sizes for variable length types; unclear if it helps performance.
+                    // InsertCommand.Prepare();
+                    // InsertCommand.ExecuteNonQuery();
 
                     for (int i = 0; i < Orgs.Count; i++)
                     {

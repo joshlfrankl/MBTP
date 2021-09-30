@@ -122,7 +122,11 @@ Avg gates: {4:F2}; Avg length: {5:F2}; Tick time: {6:F4}s; Audit time: {7:F4}s",
 
                 System.GC.Collect();
             }
-            p.ToDB(Configuration.Config["dumpPopulationPath"]);
+            if (Convert.ToBoolean(Configuration.Config["dumpPopulation?"]))
+            {
+                p.ToDB(Configuration.Config["dumpPopulationPath?"]);
+            }
+            
             CodeTimer.Stop();
             Console.WriteLine(String.Format("{0} generations took: {1:F4}s", NumGenerations, CodeTimer.Elapsed.TotalSeconds));
         }
